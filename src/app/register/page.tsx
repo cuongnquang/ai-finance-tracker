@@ -2,39 +2,44 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { registerSchema, RegisterInput } from "@/lib/validation/auth"
+import { useWatch } from "react-hook-form"
+import { FormField } from "@/components/forms/FormField"
+import { PasswordStrength } from "@/components/forms/PasswordStrength"
+import { SubmitButton } from "@/components/forms/SubmitButton"
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+
 export default function RegisterPage() {
   const router = useRouter()
-
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
 
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<RegisterInput>({
+    resolver: zodResolver(registerSchema),
+  })
 
-  const handleRegister = async () => {
-    if (!email || !password) {
-      toast.error("Vui lòng nhập đầy đủ thông tin")
-      return
-    }
+  const password = useWatch({
+  control,
+  name: "password",
+})
 
-    if (password.length < 6) {
-      toast.error("Mật khẩu phải ít nhất 6 ký tự")
-      return
-    }
-
+  const onSubmit = async (values: RegisterInput) => {
     setLoading(true)
 
     const { error } = await supabase.auth.signUp({
-      email,
-      password,
+      email: values.email,
+      password: values.password,
       options: {
         emailRedirectTo: `${window.location.origin}/dashboard`,
       },
@@ -46,18 +51,17 @@ export default function RegisterPage() {
       return
     }
 
-    toast.success("Đăng ký thành công! Kiểm tra email để xác nhận.")
-    router.push('/login')
-    setLoading(false)
+    toast.success("Đăng ký thành công! Kiểm tra email.")
+    router.push("/login")
   }
 
-  const handleGoogleLogin = async () => {
+  const handleGoogle = async () => {
     setLoading(true)
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/dashboard`,
+        redirectTo: window.location.origin,
       },
     })
 
@@ -69,49 +73,48 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <Card className="w-100">
+      <Card className="w-[400px]">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">
-            Đăng ký AI Finance Tracker
+          <CardTitle className="text-center text-2xl">
+            Register
           </CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Email</Label>
-            <Input
-              type="email"
-              placeholder="your@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
-          <div className="space-y-2">
-            <Label>Password</Label>
-            <Input
+            <FormField
+              label="Email"
+              name="email"
+              register={register}
+              error={errors.email?.message}
+            />
+
+            <FormField
+              label="Mật khẩu"
+              name="password"
               type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              register={register}
+              error={errors.password?.message}
             />
-          </div>
 
-          <Button
-            onClick={handleRegister}
-            disabled={loading}
-            className="w-full"
-          >
-            {loading ? "Đang đăng ký..." : "Đăng ký"}
-          </Button>
+            <PasswordStrength password={password || ""} />
 
-          <Button
-            variant="outline"
-            onClick={handleGoogleLogin}
-            disabled={loading}
-            className="w-full"
-          >
-            Đăng nhập với Google
+            <FormField
+              label="Xác nhận mật khẩu"
+              name="confirmPassword"
+              type="password"
+              register={register}
+              error={errors.confirmPassword?.message}
+            />
+
+            <SubmitButton loading={loading}>
+              Đăng ký
+            </SubmitButton>
+          </form>
+
+          <Button onClick={handleGoogle} variant="outline" className="w-full">
+            Đăng ký với Google
           </Button>
 
           <p className="text-center text-sm text-gray-500">

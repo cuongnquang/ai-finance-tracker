@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, Sparkles } from "lucide-react"

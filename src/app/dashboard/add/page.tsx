@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 const categories = [
   "Ăn uống", 
@@ -54,9 +55,9 @@ export default function AddTransaction() {
     })
 
     if (error) {
-      alert('Lỗi: ' + error.message)
+      toast.error('Lỗi: ' + error.message)
     } else {
-      alert('Thêm giao dịch thành công!')
+      toast.success('Thêm giao dịch thành công!')
       router.push('/dashboard')
     }
     setLoading(false)
@@ -94,7 +95,6 @@ export default function AddTransaction() {
               </Select>
             </div>
 
-            {/* Phần Danh mục đã sửa thành Select */}
             <div>
               <Label>Danh mục</Label>
               <Select value={category} onValueChange={setCategory}>
