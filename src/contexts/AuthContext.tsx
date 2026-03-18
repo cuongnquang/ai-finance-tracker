@@ -24,35 +24,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
 
-  useEffect(() => {
-    // Lấy session ban đầu
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+useEffect(() => {
+  const init = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    setUser(user ?? null)
+    setLoading(false)
+  }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
-      console.log('🔄 Auth event:', event)
+  init()
 
-      setSession(currentSession)
-      setUser(currentSession?.user ?? null)
-      setLoading(false)
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((event, currentSession) => {
+    console.log("🔄 Auth event:", event)
 
-      // CHỈ redirect khi vừa mới SIGNED_IN và đang ở trang login/register
-      if (event === "SIGNED_IN" && currentSession) {
-        if (pathname === '/login' || pathname === '/register') {
-          router.replace('/dashboard')
-        }
+    setSession(currentSession)
+    setUser(currentSession?.user ?? null)
+    setLoading(false)
+
+    if (event === "SIGNED_IN" && currentSession) {
+      if (!pathname.startsWith("/dashboard")) {
+        router.replace("/dashboard")
       }
+    }
 
-      if (event === "SIGNED_OUT") {
-        router.replace('/login')
-      }
-    })
+    if (event === "SIGNED_OUT") {
+      router.replace("/login")
+    }
+  })
 
-    return () => subscription.unsubscribe()
-  }, [router, pathname])
+  return () => subscription.unsubscribe()
+}, [router, pathname])
 
   return (
     <AuthContext.Provider value={{ user, session, loading }}>

@@ -20,11 +20,11 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false)
 
   // Nếu đã login thì redirect ngay
-  // useEffect(() => {
-  //   if (user) {
-  //     router.replace("/dashboard")
-  //   }
-  // }, [user, router])
+  useEffect(() => {
+    if (user) {
+      router.replace("/dashboard")
+    }
+  }, [user, router])
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -52,6 +52,25 @@ export default function LoginPage() {
       setSubmitting(false)
     }
   }
+
+  const handleLoginWithGoogle = async () => {
+  setSubmitting(true)
+
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: window.location.origin,
+    },
+  })
+
+  if (error) {
+    toast.error(error.message)
+    setSubmitting(false)
+  } else {
+    // fallback nếu không redirect (hiếm)
+    setTimeout(() => setSubmitting(false), 5000)
+  }
+}
 
   if (authLoading) {
     return (
@@ -98,7 +117,12 @@ export default function LoginPage() {
             {submitting ? "Đang đăng nhập..." : "Đăng nhập"}
           </Button>
 
-          <Button variant="outline" className="w-full" disabled={submitting}>
+          <Button 
+          onClick={handleLoginWithGoogle} 
+          variant="outline" 
+          className="w-full" 
+          disabled={submitting}
+          >
             Đăng nhập với Google
           </Button>
 

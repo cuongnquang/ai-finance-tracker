@@ -99,8 +99,7 @@ const stats = useMemo(() => {
     { name: "Thu nhập", value: stats.totalIncome, fill: "#22c55e" },
     { name: "Chi tiêu", value: stats.totalExpense, fill: "#ef4444" },
   ]
-
-  // Dữ liệu cho biểu đồ tròn (top 5 danh mục chi tiêu)
+  
   const pieData = useMemo(() => {
     const expenseByCategory = transactions
       .filter(t => t.type === "expense")

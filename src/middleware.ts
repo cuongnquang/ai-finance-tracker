@@ -9,7 +9,9 @@ export async function middleware(req: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() { return req.cookies.getAll() },
+        getAll() {
+          return req.cookies.getAll()
+        },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
             req.cookies.set(name, value)
@@ -20,23 +22,28 @@ export async function middleware(req: NextRequest) {
     }
   )
 
-  const { data: { session } } = await supabase.auth.getSession()
+  // 🔥 FIX: dùng getUser thay vì getSession
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   const pathname = req.nextUrl.pathname
 
-  console.log(`[Middleware] ${pathname} → Session: ${!!session}`)
+  console.log(`[Middleware] ${pathname} → User: ${!!user}`)
 
-  const publicRoutes = ['/login', '/register']
-  const isPublic = publicRoutes.some(route => pathname === route || pathname.startsWith(route + '/'))
+  const publicRoutes = ["/login", "/register"]
+  const isPublic = publicRoutes.some(
+    (route) => pathname === route || pathname.startsWith(route + "/")
+  )
 
-  // TẤT CẢ route bắt đầu bằng /dashboard đều là protected
-  const isProtected = pathname.startsWith('/dashboard')
+  const isProtected = pathname.startsWith("/dashboard")
 
-  if (!session && isProtected) {
+  if (!user && isProtected) {
     console.log("→ Redirect to /login")
     return NextResponse.redirect(new URL("/login", req.url))
   }
 
-  if (session && isPublic) {
+  if (user && isPublic) {
     console.log("→ Redirect to /dashboard")
     return NextResponse.redirect(new URL("/dashboard", req.url))
   }
