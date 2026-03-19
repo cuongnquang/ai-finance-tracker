@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
+import { getCurrencySymbol } from "@/lib/exchangeRates"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,6 +18,9 @@ const categories = [
   "Ăn uống", "Di chuyển", "Điện nước", "Internet", "Giải trí",
   "Mua sắm", "Sức khỏe", "Giáo dục", "Nhà ở", "Khác"
 ]
+
+const defaultCurrency = 'VND';
+const currencySymbol = getCurrencySymbol(defaultCurrency);
 
 type Budget = {
   id: string
@@ -67,7 +71,7 @@ export default function BudgetPage() {
 
       supabase
         .from("transactions")
-        .select("category, amount")
+        .select("category, amount, currency")
         .eq("user_id", user.id)
         .eq("type", "expense")
         .gte("date", startDate)
@@ -149,7 +153,7 @@ export default function BudgetPage() {
             </div>
 
             <div>
-              <Label>Số tiền ngân sách (VND)</Label>
+              <Label>Số tiền ngân sách {currencySymbol}</Label>
               <Input
                 type="number"
                 value={amount}

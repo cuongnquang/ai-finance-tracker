@@ -25,10 +25,17 @@ type Transaction = {
   id: string
   amount: number
   type: "income" | "expense"
+  currency: string
   category: string | null
   date: string
   description: string | null
 }
+
+import { getCurrencySymbol } from "@/lib/exchangeRates";
+import { CURRENCIES } from "@/lib/currencies";
+
+const defaultCurrency = 'VND';
+const userCurrencySymbol = getCurrencySymbol(defaultCurrency);
 
 type ExpenseMap = Record<string, number>
 
@@ -50,11 +57,11 @@ export default function Dashboard() {
     setLoading(true)
 
     try {
-      const { data, error } = await supabase
-        .from("transactions")
-        .select("id, amount, type, category, date, description")
-        .eq("user_id", user.id)
-        .order("date", { ascending: false })
+        const { data, error } = await supabase
+          .from("transactions")
+          .select("id, amount, type, currency, category, date, description")
+          .eq("user_id", user.id)
+          .order("date", { ascending: false })
 
       if (error) throw error
 
@@ -134,7 +141,7 @@ const stats = useMemo(() => {
             <CardTitle className="text-green-600">Tổng Thu Nhập</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{stats.totalIncome.toLocaleString("vi-VN")} ₫</p>
+            <p className="text-3xl font-bold">{stats.totalIncome.toLocaleString("vi-VN")} {userCurrencySymbol}</p>
           </CardContent>
         </Card>
 
@@ -143,7 +150,7 @@ const stats = useMemo(() => {
             <CardTitle className="text-red-600">Tổng Chi Tiêu</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{stats.totalExpense.toLocaleString("vi-VN")} ₫</p>
+            <p className="text-3xl font-bold">{stats.totalExpense.toLocaleString("vi-VN")} {userCurrencySymbol}</p>
           </CardContent>
         </Card>
 
@@ -153,7 +160,7 @@ const stats = useMemo(() => {
           </CardHeader>
           <CardContent>
             <p className={`text-3xl font-bold ${stats.balance >= 0 ? "text-green-600" : "text-red-600"}`}>
-              {stats.balance.toLocaleString("vi-VN")} ₫
+              {stats.balance.toLocaleString("vi-VN")} {userCurrencySymbol}
             </p>
           </CardContent>
         </Card>

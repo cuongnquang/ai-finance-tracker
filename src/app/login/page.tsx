@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
-
+import { mapAuthError } from "@/lib/errors"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { loginSchema, LoginInput } from "@/lib/validation/auth"
@@ -34,21 +34,29 @@ export default function LoginPage() {
   }, [user, router])
 
   const onSubmit = async (values: LoginInput) => {
+  try {
     setSubmitting(true)
 
-    const { data, error } = await supabase.auth.signInWithPassword(values)
+    const { error } = await supabase.auth.signInWithPassword(values)
 
-    if (error) {
-      toast.error(error.message)
-      setSubmitting(false)
-      return
-    }
+    if (error) throw error
 
     toast.success("Đăng nhập thành công!")
     router.replace("/dashboard")
+
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      toast.error(mapAuthError(err.message))
+    } else {
+      toast.error("Có lỗi xảy ra")
+    }
+  } finally {
+    setSubmitting(false)
   }
+}
 
   const handleGoogle = async () => {
+  try {
     setSubmitting(true)
 
     const { error } = await supabase.auth.signInWithOAuth({
@@ -58,11 +66,18 @@ export default function LoginPage() {
       },
     })
 
-    if (error) {
-      toast.error(error.message)
-      setSubmitting(false)
+    if (error) throw error
+
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      toast.error(mapAuthError(err.message))
+    } else {
+      toast.error("Đăng nhập Google thất bại")
     }
+  } finally {
+    setSubmitting(false)
   }
+}
 
   if (authLoading) return <div>Loading...</div>
 

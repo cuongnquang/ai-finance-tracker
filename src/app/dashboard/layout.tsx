@@ -5,6 +5,8 @@ import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { ErrorBoundary } from "@/components/ErrorBoundary"
+import { Tag, List, Repeat, FileText } from "lucide-react"
 import { Home, Wallet, Sparkles, LogOut } from "lucide-react"
 
 export default function DashboardLayout({
@@ -49,6 +51,34 @@ export default function DashboardLayout({
               <Sparkles size={24} />
               AI Insights
             </Link>
+            <Link 
+              href="/dashboard/categories" 
+              className="flex items-center gap-3 px-5 py-4 rounded-xl hover:bg-purple-50 text-gray-700 font-medium transition-all hover:translate-x-1"
+            >
+              <Tag size={24} />
+              Danh mục
+            </Link>
+            <Link 
+              href="/dashboard/transactions" 
+              className="flex items-center gap-3 px-5 py-4 rounded-xl hover:bg-purple-50 text-gray-700 font-medium transition-all hover:translate-x-1"
+            >
+              <List size={24} />
+              Giao dịch
+            </Link>
+            <Link 
+              href="/dashboard/recurring" 
+              className="flex items-center gap-3 px-5 py-4 rounded-xl hover:bg-purple-50 text-gray-700 font-medium transition-all hover:translate-x-1"
+            >
+              <Repeat size={24} />
+              Định kỳ
+            </Link>
+            <Link 
+              href="/dashboard/reports" 
+              className="flex items-center gap-3 px-5 py-4 rounded-xl hover:bg-purple-50 text-gray-700 font-medium transition-all hover:translate-x-1"
+            >
+              <FileText size={24} />
+              Báo cáo
+            </Link>
           </nav>
         </div>
 
@@ -73,7 +103,14 @@ export default function DashboardLayout({
       {/* Nội dung chính */}
       <div className="flex-1 overflow-auto">
         <main className="p-6 md:p-10 max-w-6xl mx-auto">
+{/* Dashboard content wrapped with ErrorBoundary */}
+        <ErrorBoundary fallback={<div className="p-8 text-center">
+          <h2 className="text-xl font-semibold text-red-800 mb-2">Dashboard lỗi</h2>
+          <p className="text-red-600 mb-4">Có lỗi xảy ra trong dashboard</p>
+          <Button onClick={() => window.location.reload()}>Tải lại trang</Button>
+        </div>}>
           {children}
+        </ErrorBoundary>
         </main>
       </div>
     </div>

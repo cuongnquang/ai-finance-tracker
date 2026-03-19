@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { CurrencySelect } from '@/components/forms/CurrencySelect';
+import { getCurrencySymbol } from '@/lib/exchangeRates';
 
 const categories = [
   "Ăn uống", 
@@ -29,6 +31,7 @@ const categories = [
 export default function AddTransaction() {
   const [amount, setAmount] = useState('')
   const [type, setType] = useState<'income' | 'expense'>('expense')
+  const [currency, setCurrency] = useState('VND')
   const [category, setCategory] = useState('')
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [description, setDescription] = useState('')
@@ -49,6 +52,7 @@ export default function AddTransaction() {
       user_id: session.user.id,
       amount: parseFloat(amount),
       type,
+      currency,
       category: category || null,
       date: new Date(date).toISOString(),
       description: description || null,
@@ -73,7 +77,7 @@ export default function AddTransaction() {
           <form onSubmit={handleSubmit} className="space-y-4">
             
             <div>
-              <Label>Số tiền (VND)</Label>
+              <Label>Số tiền {getCurrencySymbol(currency)}</Label>
               <Input
                 type="number"
                 value={amount}
@@ -81,6 +85,8 @@ export default function AddTransaction() {
                 required
               />
             </div>
+
+            <CurrencySelect value={currency} onChange={setCurrency} />
 
             <div>
               <Label>Loại giao dịch</Label>
